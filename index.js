@@ -50,7 +50,7 @@ class ICMP {
                 }
 
                 this._timeout = setTimeout(() => {
-                    resolve();
+                    resolve(this);
                     this.close();
                 }, timeout);
 
@@ -71,7 +71,7 @@ class ICMP {
 
                 this.close();
 
-                resolve();
+                resolve(this);
             });
 
             this.socket.on('error', err => {
