@@ -1,5 +1,5 @@
 {
-  "name": "icmp",
+  "name": "@jauntywunderkind/icmp",
   "version": "1.4.0",
   "description": "Internet Control Message Protocol in Node",
   "main": "index.js",
