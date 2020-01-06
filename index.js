@@ -1,6 +1,6 @@
 const raw = require('raw-socket');
 const net = require('net');
-const dns = require('dns');
+const dns = require('dns').promises;
 
 class ICMP {
     constructor(host) {
@@ -25,25 +25,15 @@ class ICMP {
         }
     }
 
-    _resolveIP() {
-        return new Promise(resolve => {
-            if (!this.ip) {
-                if (net.isIPv4(this.host)) {
-                    this.ip = this.host;
-                    return resolve();
-                }
-
-                dns.resolve4(this.host, (err, [ip]) => {
-                    if (err) return reject(err);
-
-                    this.ip = ip;
-
-                    resolve();
-                });
-            } else {
-                resolve();
+    async _resolveIP() {
+        if (!this.ip) {
+            if (net.isIPv4(this.host)) {
+                this.ip = this.host;
+                return;
             }
-        });
+
+            this.ip = await dns.resolve4(this.host);
+        }
     }
 
     _queue(header, timeout = 5000) {
@@ -116,17 +106,13 @@ class ICMP {
         return raw.writeChecksum(header, 2, raw.createChecksum(header));
     }
 
-    send(data = "", timeout = 5000) {
-        return new Promise((resolve, reject) => {
-            const header = this.createHeader(data);
-
-            this._queue(header, timeout).then(resolve, reject);
-        });
+    async send(data = "", timeout = 5000) {
+        const header = this.createHeader(data);
+        return this._queue(header, timeout);
     }
 
     static send(host, data = "", timeout = 5000) {
         const obj = new this(host);
-
         return obj.send( data, timeout)
     }
 
